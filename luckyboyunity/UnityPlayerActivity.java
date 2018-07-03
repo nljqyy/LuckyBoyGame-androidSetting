@@ -57,6 +57,7 @@ public class UnityPlayerActivity extends Activity
     private  String carwTime="";
     private  boolean isCarw=false;
     private  String orderNumber="";
+    private  String openId="";
     private SpeechGroupManager mGroupManager;
     private int count;
     // Setup activity layout
@@ -213,9 +214,11 @@ public class UnityPlayerActivity extends Activity
                             if (!status.isEmpty() && status.equals("1")) {//支付完成 开始游戏
                                 isPay=true;
                                 count=0;
+                                openId=jsonObject.optString("openId");
+                                String paytime=jsonObject.optString("winningLevel");
                                 if(isForeground)
                                 {
-                                    UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","PaySuccess");
+                                    UnityPlayer.UnitySendMessage("SDKManager","PaySuccess",paytime);
                                 }
                             }
                             else
@@ -322,7 +325,8 @@ public class UnityPlayerActivity extends Activity
                             String probaValue = jsonObject.optString("captureProb");//概率值
                             String winging = jsonObject.optString("captureStepNum");//中奖值
                             String carwBasic = jsonObject.optString("captureStepLenght");//基数
-                            String pwVV=probaValue+"|"+winging+"|"+carwBasic;
+                            String money=jsonObject.optString("qrAmount");//金额
+                            String pwVV=probaValue+"|"+winging+"|"+carwBasic+"|"+money;
                             UnityPlayer.UnitySendMessage("SDKManager","GetProbabilityCall",pwVV);
                         }
                         else if(jsonObject.has("resultCode") && jsonObject.getString("resultCode").equals("NO_DOLL_ROBOT"))
@@ -366,8 +370,10 @@ public class UnityPlayerActivity extends Activity
             message.append("robotId", getRobotId());
             message.append("status",number);
             message.append("reportTime",catchTime);
+            message.append("openId",openId);
+            message.append("applyRechargeId",orderNumber);
 			message.setEncryption(true);
-            L.d(TAG, "SendCatchRecord status=" +number+" reportTime="+catchTime);
+            L.d(TAG, "SendCatchRecord status=" +number+" reportTime="+catchTime+" openId="+openId);
             NetClient.getInstance(this).sendNetMessage(message, new BaseSendRequestListener() {
                 @Override
                 public void onSuccess(NetMessage message, String result) {
