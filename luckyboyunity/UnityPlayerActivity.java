@@ -227,6 +227,11 @@ public class UnityPlayerActivity extends Activity
                                    UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","NoPay");
                             }
                         }
+                        else
+                        {
+                            if(isfirst)
+                                UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","NoPay");
+                        }
                     } catch (JSONException e) {
                         e.printStackTrace();
                         L.d(TAG, "GetPayStatus  解析错误:"+e.getMessage());
@@ -238,17 +243,18 @@ public class UnityPlayerActivity extends Activity
                     super.onFail(message, errorCode, errorMessage);
                     L.d(TAG, "GetPayStatus  onFail  errorCode=" + errorCode+" errorMessage="+errorMessage);
                     if(!isfirst)return;
-                    if(count!=3) {
+                    if(count!=9) {
                         count++;
                         handler.sendEmptyMessageDelayed(2, 3 * 1000);
                     }else{
+                        UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","Error");
                         count=0;
                     }
                 }
             });
         } catch (JSONException e) {
             e.printStackTrace();
-            UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","Error");
+            //UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","Error");
         }
 
     }
@@ -347,7 +353,7 @@ public class UnityPlayerActivity extends Activity
             });
         } catch (JSONException e) {
             e.printStackTrace();
-            UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","Error");
+           // UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","Error");
         }
 
     }
@@ -398,7 +404,7 @@ public class UnityPlayerActivity extends Activity
                 public void onFail(NetMessage message, int errorCode, String errorMessage) {
                     super.onFail(message, errorCode, errorMessage);
                     L.d(TAG, "SendCatchRecord  onFail  errorCode=" + errorCode+" errorMessage="+errorMessage);
-                    if(count!=3) {
+                    if(count!=9) {
                         count++;
                         handler.sendEmptyMessageDelayed(1, 3 * 1000);
                     }else{
