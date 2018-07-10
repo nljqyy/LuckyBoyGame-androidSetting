@@ -36,6 +36,7 @@ public class Constants {
         QrCode,
         Probability,
         Record,
+        RecordList,
     }
 
     private static final String ROOT_PATH = Environment.getExternalStorageDirectory() + "/efrobot/";
@@ -52,6 +53,8 @@ public class Constants {
     public  static  final  String LuckCatchProbability="getDollProbability";
 
     public  static  final  String LuckCatchRecord="reportCrawlRecord";
+
+    public  static  final  String LuckCatchRecordList="reportBatchCrawlRecord";
 
 
     public  static String  GetIPAddress(IpTypeLuck iptype)
@@ -73,9 +76,11 @@ public class Constants {
             case Record:
                 ipadress=  ip+ LuckCatchRecord;
                 break;
+            case RecordList:
+                ipadress= ip+ LuckCatchRecordList;
+                break;
         }
         L.d(TAG, "GetIPAddress  IpAddress="+ipadress);
         return ipadress;
     }
-
 }

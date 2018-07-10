@@ -29,6 +29,8 @@ import com.efrobot.library.net.NetMessage;
 import com.efrobot.library.net.TextMessage;
 import com.efrobot.library.net.utils.NetUtil;
 import com.efrobot.library.urlconfig.UrlConstants;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.lang.ref.WeakReference;
@@ -215,7 +217,7 @@ public class UnityPlayerActivity extends Activity
                                 isPay=true;
                                 count=0;
                                 openId=jsonObject.optString("openId");
-                                String paytime=jsonObject.optString("winningLevel");
+                                String paytime=jsonObject.optString("winningLevel")+"|"+openId;
                                 if(isForeground)
                                 {
                                     UnityPlayer.UnitySendMessage("SDKManager","PaySuccess",paytime);
@@ -243,7 +245,7 @@ public class UnityPlayerActivity extends Activity
                     super.onFail(message, errorCode, errorMessage);
                     L.d(TAG, "GetPayStatus  onFail  errorCode=" + errorCode+" errorMessage="+errorMessage);
                     if(!isfirst)return;
-                    if(count!=9) {
+                    if(count!=3) {
                         count++;
                         handler.sendEmptyMessageDelayed(2, 3 * 1000);
                     }else{
@@ -283,7 +285,7 @@ public class UnityPlayerActivity extends Activity
                         if (jsonObject.has("resultCode") && jsonObject.getString("resultCode").equals("SUCCESS")) {
                             String urlStr = jsonObject.optString("qrUrl");
                             String orderNo = jsonObject.optString("orderNo");
-                            String msg=urlStr+"|"+orderNo;
+                            String msg=urlStr+"|"+orderNo+"|"+getRobotId();
                             UnityPlayer.UnitySendMessage("SDKManager", "QRCodeCall", msg);
                         }
                     } catch (JSONException e) {
@@ -404,12 +406,7 @@ public class UnityPlayerActivity extends Activity
                 public void onFail(NetMessage message, int errorCode, String errorMessage) {
                     super.onFail(message, errorCode, errorMessage);
                     L.d(TAG, "SendCatchRecord  onFail  errorCode=" + errorCode+" errorMessage="+errorMessage);
-                    if(count!=9) {
-                        count++;
-                        handler.sendEmptyMessageDelayed(1, 3 * 1000);
-                    }else{
-                        count=0;
-                    }
+                    UnityPlayer.UnitySendMessage("SDKManager", "AndroidCall", "UpRecordFail");
                 }
             });
         } catch (JSONException e) {
@@ -417,6 +414,53 @@ public class UnityPlayerActivity extends Activity
         }
 
     }
+
+    public void SendCatchRecordList(String  catchlist)
+    {
+        L.d("SendCatchRecordList", "unity调用了SendCatchRecordList方法");
+        if (!NetUtil.checkNet(this)) {
+            L.d(TAG, "no network");
+            return;
+        }
+        try {
+            TextMessage message = new TextMessage();
+            message.setRequestMethod(TextMessage.REQUEST_METHOD_POST);
+            message.setUrl(Constants.GetIPAddress(Constants.IpTypeLuck.RecordList));
+            JSONArray array=new JSONArray(catchlist);
+            message.append("list", array);
+            message.setEncryption(true);
+            L.d(TAG, "SendCatchRecordList list="+array);
+            NetClient.getInstance(this).sendNetMessage(message, new BaseSendRequestListener() {
+                @Override
+                public void onSuccess(NetMessage message, String result) {
+                    super.onSuccess(message, result);
+                    L.d(TAG, "SendCatchRecordList result=" + result);
+                    JSONObject jsonObject = null;
+                    try {
+                        jsonObject = new JSONObject(result);
+                        if (jsonObject.has("resultCode") && jsonObject.getString("resultCode").equals("SUCCESS")) {
+                            UnityPlayer.UnitySendMessage("SDKManager", "AndroidCall", "UpRecordListSuccess");
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        L.d(TAG, "SendCatchRecordList  解析错误:"+e.getMessage());
+                    }
+                }
+
+                @Override
+                public void onFail(NetMessage message, int errorCode, String errorMessage) {
+                    super.onFail(message, errorCode, errorMessage);
+                    L.d(TAG, "SendCatchRecordList  onFail  errorCode=" + errorCode+" errorMessage="+errorMessage);
+                }
+            });
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
     Handler handler=new Handler(){
         @Override
         public void dispatchMessage(Message msg) {
