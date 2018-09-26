@@ -77,8 +77,9 @@ dependencies {
 	compile fileTree(dir: 'libs', include: ['*.jar'])
 	testCompile 'junit:junit:4.12'
 	compile 'com.android.support:appcompat-v7:25.1.0'
-	compile 'com.efrobot.library:framework:1.0.87'
+	compile 'com.efrobot.library:framework:1.0.91'
 	compile 'com.efrobot.library.net:mvpnetlibrary:3.1.1'
     compile 'com.efrobot.library.urlconfig:urlconfig:0.0.34'
+	compile 'com.google.code.gson:gson:2.7'
 	compile(name:'claw-game-sdk-framework', ext:'aar')
 }

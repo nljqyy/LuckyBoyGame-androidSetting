@@ -2,6 +2,8 @@ package com.jhz.luckyboyunity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -16,9 +18,12 @@ import org.json.JSONObject;
 
 import com.efrobot.library.RobotState;
 import com.efrobot.library.mvp.utils.L;
+import com.google.gson.Gson;
 import com.unity3d.player.UnityPlayer;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+
 import com.efrobot.claw.game.sdk.*;
 
 
@@ -43,12 +48,13 @@ public class AlertObject implements OnRobotStateChangeListener ,OnClawGameStatus
 
     private   BaseHandler mBaseHandler;
     public  Context mContext;
+    public boolean isAppQuit;
 
     public AlertObject(Context context) {
 
         this.mContext = context;
         mBaseHandler = new BaseHandler(this);
-
+         isAppQuit=false;
          if (!RobotManager.getInstance(mContext).hasConnect()) {
           RobotManager.getInstance(mContext).registerOnInitCompleteListener(new RobotManager.OnInitCompleteListener() {
          @Override
@@ -61,12 +67,10 @@ public class AlertObject implements OnRobotStateChangeListener ,OnClawGameStatus
             RobotManager.getInstance(mContext).enterGraspDoll();
          }
 
-         RobotManager.getInstance(mContext).registerHeadKeyStateChangeListener(this);
-
+        RobotManager.getInstance(mContext).registerRightWingActivePassiveChangeListener(this);
+        RobotManager.getInstance(mContext).registerLeftWingActivePassiveChangeListener(this);
+        RobotManager.getInstance(mContext).registerHeadKeyStateChangeListener(this);
         ClawGameManager.getInstance(mContext).registerClawGameStatusChangeListener(this);
-
-
-
     }
 
     /**
@@ -122,8 +126,6 @@ public class AlertObject implements OnRobotStateChangeListener ,OnClawGameStatus
 
 
 
-
-
     //发送语音
     private void hintSpeak(String content, Context context) {
         try {
@@ -143,12 +145,21 @@ public class AlertObject implements OnRobotStateChangeListener ,OnClawGameStatus
      public void onRobotSateChange(int robotStateIndex, int newState) {
         switch (robotStateIndex) {
          case RobotState.ROBOT_STATE_INDEX_HEAD_KEY://头部按钮
-             Log.d(TAG, "头部按钮");
         if (newState != RobotState.HEADKEY_STATE_UP) {
-               Log.d(TAG, "头部按钮按下");
+               Log.d(TAG, "头部按钮按下----isAppQuit:"+isAppQuit);
+            if(isAppQuit==false)
                 UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","HeadDown");
          }
-      break;
+                break;
+            case RobotState.ROBOT_STATE_INDEX_LEFT_WING_ACTIVE_PASSIVE://左翅膀角度
+                if(newState==2)//被动运动
+                  UnityPlayer.UnitySendMessage("SDKManager","Question_Wing","1");
+                break;
+            case RobotState.ROBOT_STATE_INDEX_RIGHT_WING_ACTIVE_PASSIVE://右翅膀运动
+                if(newState==2)//被动运动
+                  UnityPlayer.UnitySendMessage("SDKManager","Question_Wing","0");
+                break;
+
       }
      }
 
@@ -167,18 +178,88 @@ public class AlertObject implements OnRobotStateChangeListener ,OnClawGameStatus
              UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","NoHas");
          }
       }
-      else if(status==ClawGameStatus.INDEX_CHECK_DOLL_TAKE_AWAY)//是否取走
-      {
-          if(num==ClawGameStatus.VALUE_DOLL_ALL_TAKE_AWAY)//已取走
-          {
-              UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","TakeAway");
-          }
-          else
-          {
-              UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","NoTakeAway");
-          }
-      }
+     // else if(status==ClawGameStatus.INDEX_CHECK_DOLL_TAKE_AWAY)//是否取走
+     // {
+        //  if(num==ClawGameStatus.VALUE_DOLL_ALL_TAKE_AWAY)//已取走
+         // {
+        //      UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","TakeAway");
+        //  }
+        //  else
+        //  {
+         //     UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","NoTakeAway");
+        //  }
+     // }
     }
+
+    /**
+     * 问答模式数据
+     *
+     * @param
+     * @return
+     */
+    public String jsonAnswer() {
+        Cursor itemCursor = null;
+        GameData gameData = new GameData();
+        Gson gson = new Gson();
+        try {
+            Uri itemUri = Uri.parse("content://com.efrobot.settings.common.GameProvider");
+            itemCursor = mContext.getContentResolver().query(itemUri, null, null, null, null);
+            if (itemCursor != null) {
+                ArrayList<GameAnswer> answerArray = new ArrayList<>();
+                while (itemCursor.moveToNext()) {
+                    GameAnswer gameAnswer = new GameAnswer();
+                    String question = itemCursor.getString(itemCursor.getColumnIndex("question"));
+                    String rightAnswer = itemCursor.getString(itemCursor.getColumnIndex("right_answer"));
+                    String wrongAnswer = itemCursor.getString(itemCursor.getColumnIndex("wrong_answer"));
+                    gameAnswer.setQuestion(question);
+                    gameAnswer.setRightAnswer(rightAnswer);
+                    gameAnswer.setWrongAnswer(wrongAnswer);
+                    answerArray.add(gameAnswer);
+                    Log.i(TAG, "question=" + question + ",rightAnswer=" + rightAnswer + ",wrongAnswer=" + wrongAnswer);
+                }
+                if (answerArray.size() > 0) {
+                    gameData.setCode(2);
+                    gameData.setMessage("有数据");
+                    gameData.setGameAnswer(answerArray);
+                } else {
+                    gameData.setCode(1);
+                    gameData.setMessage("无数据");
+                }
+            } else {
+                gameData.setCode(0);
+                gameData.setMessage("表不存在");
+            }
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        } finally {
+            if (itemCursor != null) itemCursor.close();
+        }
+        return gson.toJson(gameData);
+
+    }
+    //解注
+    public void unRegister() {
+        RobotManager.getInstance(mContext).unRegisterRightWingActivePassiveChangeListener(this);
+        RobotManager.getInstance(mContext).unRegisterLeftWingActivePassiveChangeListener(this);
+        RobotManager.getInstance(mContext).unRegisterHeadKeyStateChangeListener(this);
+        ClawGameManager.getInstance(mContext).registerClawGameStatusChangeListener(null);
+    }
+
+    //注册翅膀监听与否
+    public void RegisterWingListener(boolean isReg)
+    {
+        if(isReg)
+        {
+            RobotManager.getInstance(mContext).registerRightWingActivePassiveChangeListener(this);
+            RobotManager.getInstance(mContext).registerLeftWingActivePassiveChangeListener(this);
+        }
+        else
+        {
+            RobotManager.getInstance(mContext).unRegisterRightWingActivePassiveChangeListener(this);
+            RobotManager.getInstance(mContext).unRegisterLeftWingActivePassiveChangeListener(this);
+        }
+    }
+
 
 
     protected static class BaseHandler extends Handler {

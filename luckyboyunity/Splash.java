@@ -70,7 +70,7 @@ public class Splash {
 
             bgView = new ImageView(UnityPlayer.currentActivity);
 
-            bgView.setBackgroundResource(R.drawable.app_icon);
+            bgView.setBackgroundResource(R.mipmap.app_icon);
 
             bgView.setScaleType(ScaleType.CENTER);
 

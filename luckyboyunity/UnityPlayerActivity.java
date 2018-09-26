@@ -48,7 +48,6 @@ public class UnityPlayerActivity extends Activity
 {
     protected UnityPlayer mUnityPlayer; // don't change the name of this variable; referenced from native code
 
-
     private   AlertObject alerObj;
     private   BaseHandler mBaseHandler;
     private   boolean canPlay = false;
@@ -93,12 +92,14 @@ public class UnityPlayerActivity extends Activity
         L.d(TAG, "---------------onDestroy------------");
         mUnityPlayer.quit();
         super.onDestroy();
+        alerObj.unRegister();//解除监听
     }
 
     // Pause Unity
     @Override protected void onPause()
     {
         L.d(TAG, "---------------onPause------------");
+        alerObj.isAppQuit=true;//此时已退出游戏
 		mGroupManager.reset();
         super.onPause();
         mUnityPlayer.pause();
@@ -108,6 +109,7 @@ public class UnityPlayerActivity extends Activity
     @Override protected void onResume()
     {
         L.d(TAG, "---------------onResume------------");
+        alerObj.isAppQuit=false;//继续
         super.onResume();
         mUnityPlayer.resume();
     }
@@ -461,6 +463,64 @@ public class UnityPlayerActivity extends Activity
 
     }
 
+
+    //上报抓娃娃记录
+    public void Q_UpRecord(boolean isCatch, String catchTime,String q_catchTime)
+    {
+        L.d("Q_UpRecord", "unity调用了Q_UpRecord方法");
+        isCarw=isCatch;
+        carwTime=catchTime;
+        int number=isCatch?1:0;
+        if (!NetUtil.checkNet(this)) {
+            L.d(TAG, "no network");
+            return;
+        }
+        try {
+            String tempStr="ANS"+q_catchTime;
+            TextMessage message = new TextMessage();
+            message.setRequestMethod(TextMessage.REQUEST_METHOD_POST);
+            message.setUrl(Constants.GetIPAddress(Constants.IpTypeLuck.Record));
+            message.append("robotId", getRobotId());
+            message.append("status",number);
+            message.append("reportTime",catchTime);
+            message.append("openId",tempStr);
+            message.append("applyRechargeId",tempStr);
+            message.setEncryption(true);
+            L.d(TAG, "Q_UpRecord status=" +number+" reportTime="+catchTime+" openId="+tempStr);
+            NetClient.getInstance(this).sendNetMessage(message, new BaseSendRequestListener() {
+                @Override
+                public void onSuccess(NetMessage message, String result) {
+                    super.onSuccess(message, result);
+                    L.d(TAG, "Q_UpRecord result=" + result);
+                    JSONObject jsonObject = null;
+                    count=0;
+                    try {
+                        jsonObject = new JSONObject(result);
+                        if (jsonObject.has("resultCode") && jsonObject.getString("resultCode").equals("SUCCESS")) {
+                            isCarw=false;
+                            carwTime="";
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        L.d(TAG, "Q_UpRecord  解析错误:"+e.getMessage());
+                    }
+                }
+
+                @Override
+                public void onFail(NetMessage message, int errorCode, String errorMessage) {
+                    super.onFail(message, errorCode, errorMessage);
+                    L.d(TAG, "Q_UpRecord  onFail  errorCode=" + errorCode+" errorMessage="+errorMessage);
+                    UnityPlayer.UnitySendMessage("SDKManager", "AndroidCall", "UpRecordFail");
+                }
+            });
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
     Handler handler=new Handler(){
         @Override
         public void dispatchMessage(Message msg) {
@@ -564,11 +624,26 @@ public class UnityPlayerActivity extends Activity
    //出口是否有东西
     public  boolean isTakeAway()
     {
-        if(ClawGameManager.getInstance(getApplicationContext()).checkDollTakeAway() != ClawGameStatus.VALUE_DOLL_ALL_TAKE_AWAY)
-        {
-            return  false;
-        }
+       // if(ClawGameManager.getInstance(getApplicationContext()).checkDollTakeAway() != ClawGameStatus.VALUE_DOLL_ALL_TAKE_AWAY)
+       // {
+       //     return  false;
+       // }
         return  true;
+    }
+    //获得游戏模式
+    public  String GetGameModeData()
+    {
+      return  Constants.GetGameModeData();
+    }
+    //获得问题 及答案
+    public  String GetQuestionAnswer()
+    {
+        return  alerObj.jsonAnswer();
+    }
+
+    public  void AnswerStartOrEnd(boolean state)
+    {
+        alerObj.RegisterWingListener(state);
     }
 
     public void CustomQuit()
