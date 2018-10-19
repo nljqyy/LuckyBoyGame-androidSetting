@@ -7,10 +7,19 @@
     <item name="android:windowBackground">@android:color/transparent</item>
 </style>
 
-    <style name="Theme.MyAppTheme" parent="UnityThemeSelector">
+    <!--不游戏风格-->
+    <style name="nogameTheme" parent="UnityThemeSelector">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowBackground">@drawable/unity_static_splash</item>
+         <item name="android:windowBackground">@mipmap/splash_nogame</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <!--游戏风格-->
+    <style name="gameTheme" parent="UnityThemeSelector">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowBackground">@mipmap/splash_game</item>
         <item name="android:windowFullscreen">true</item>
     </style>
 </resources>

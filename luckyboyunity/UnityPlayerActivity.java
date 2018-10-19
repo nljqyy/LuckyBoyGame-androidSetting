@@ -18,6 +18,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -46,6 +47,26 @@ import com.efrobot.claw.game.sdk.*;
 
 public class UnityPlayerActivity extends Activity
 {
+
+    Handler handler=new Handler(){
+        @Override
+        public void dispatchMessage(Message msg) {
+            super.dispatchMessage(msg);
+            switch (msg.what){
+                case 1:
+                    SendCatchRecord(isCarw,carwTime);
+                    break;
+                case 2:
+                    GetPayStatus(orderNumber,true);
+                    break;
+                case 3:
+                    finish();
+                case 4:
+                    break;
+            }
+        }
+    };
+
     protected UnityPlayer mUnityPlayer; // don't change the name of this variable; referenced from native code
 
     private   AlertObject alerObj;
@@ -61,20 +82,49 @@ public class UnityPlayerActivity extends Activity
     private  String openId="";
     private SpeechGroupManager mGroupManager;
     private int count;
+
     // Setup activity layout
     @Override protected void onCreate(Bundle savedInstanceState)
     {
         L.d(TAG, "---------------onCreate------------");
+
+      //  SharedPreferences themeInfo = this.getSharedPreferences("themeInfo", 0);
+       // String current_theme=themeInfo.getString("current_theme","");
+        String isgame = Constants.GetIsGame();
+       // if(current_theme=="") {
+         //   themeInfo.edit().putString("current_theme", "game").commit();
+          //  if (isgame == "0") {
+          //      setTheme(R.style.gameTheme);
+          //  } else {
+          //      setTheme(R.style.nogameTheme);
+          //  }
+          //  AgainCreate();
+       // }
+
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
+
         count=0;
         mUnityPlayer = new UnityPlayer(this);
+        Splash.getInstance().onCreate(mUnityPlayer, savedInstanceState);
+        int img_Id = isgame == "0"?R.mipmap.splash_game:R.mipmap.splash_nogame;
+        Splash.getInstance().onShowSplash(img_Id);
+        //handler.sendEmptyMessageDelayed(4, 2 * 1000);
+
         setContentView(mUnityPlayer);
         mUnityPlayer.requestFocus();
         mGroupManager=SpeechGroupManager.getInstance(RobotManager.getInstance(this));
         ClawGameManager.getInstance(getApplicationContext()).init();//初始化
         alerObj=new AlertObject(this);
         timer = new Timer();// 实例化Timer类
+    }
+
+    private  void AgainCreate()
+    {
+        finish();
+        Intent intent = new Intent(this, UnityPlayerActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED | Intent.FLAG_ACTIVITY_CLEAR_TOP) ;
+        startActivity(intent);
     }
 
     @Override protected void onNewIntent(Intent intent)
@@ -521,23 +571,6 @@ public class UnityPlayerActivity extends Activity
     }
 
 
-    Handler handler=new Handler(){
-        @Override
-        public void dispatchMessage(Message msg) {
-            super.dispatchMessage(msg);
-            switch (msg.what){
-                case 1:
-                    SendCatchRecord(isCarw,carwTime);
-                    break;
-                case 2:
-                    GetPayStatus(orderNumber,true);
-                    break;
-                case 3:
-                    finish();
-                    break;
-            }
-        }
-    };
     public String getRobotId() {
         //获取小胖唯一编码
         String number = RobotState.getInstance(getApplicationContext()).getRobotNumber();
@@ -640,11 +673,18 @@ public class UnityPlayerActivity extends Activity
     {
         return  alerObj.jsonAnswer();
     }
-
+    //答题结束
     public  void AnswerStartOrEnd(boolean state)
     {
         alerObj.RegisterWingListener(state);
     }
+
+    //获得支付语音
+    public  String GetPayVoice(){return alerObj.jsonPayVoice();}
+
+    //关闭Splash页面
+    public  void  HideSplash(){ Splash.getInstance().onHideSplash();}
+
 
     public void CustomQuit()
     {

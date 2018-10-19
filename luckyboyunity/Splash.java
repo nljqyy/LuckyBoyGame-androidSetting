@@ -11,6 +11,7 @@ import android.content.res.Resources;
 import android.os.Bundle;
 
 
+import android.os.Handler;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 
@@ -20,8 +21,6 @@ public class Splash {
     private ImageView bgView = null;
 
     private UnityPlayer mUnityPlayer = null;
-
-
 
     private static Splash mInstance;
 
@@ -36,55 +35,43 @@ public class Splash {
                     mInstance = new Splash();
 
                 }
-
             }
-
         }
-
         return mInstance;
-
     }
 
 
     public void onCreate(UnityPlayer up, Bundle savedInstanceState) {
-
         // TODO Auto-generated method stub
-
         mUnityPlayer = up ;
-        onShowSplash();
-
     }
 
 
     @SuppressLint("NewApi")
 
-    public void onShowSplash() {
+    public void onShowSplash(int imgId) {
 
         if (bgView != null)
 
             return;
 
+        try {
 
-
-        try {Resources r = UnityPlayer.currentActivity.getResources();
-
+            Resources r = UnityPlayer.currentActivity.getResources();
             bgView = new ImageView(UnityPlayer.currentActivity);
 
-            bgView.setBackgroundResource(R.mipmap.app_icon);
-
+           // bgView.setBackgroundResource(R.mipmap.app_icon);
+            bgView.setBackgroundResource(imgId);
             bgView.setScaleType(ScaleType.CENTER);
-
             mUnityPlayer.addView(bgView,r.getDisplayMetrics().widthPixels,
 
                     r.getDisplayMetrics().heightPixels);
 
         } catch (Exception e) {
-
            // error("[onShowSplash]"+e.toString());
             e.printStackTrace();
 
         }
-
     }
 
 
@@ -94,27 +81,20 @@ public class Splash {
         try {
 
             if(bgView == null)
-
                 return;
-
             UnityPlayer.currentActivity.runOnUiThread(new Runnable() {
 
                 public void run() {
-
                     mUnityPlayer.removeView(bgView);
-
                     bgView = null;
-
+                    mInstance=null;
                 }
 
             });
 
         } catch (Exception e) {
-
             //error("[onHideSplash]"+e.toString());
             e.printStackTrace();
         }
-
     }
-
 }

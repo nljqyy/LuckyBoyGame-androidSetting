@@ -23,6 +23,7 @@ import com.unity3d.player.UnityPlayer;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.efrobot.claw.game.sdk.*;
 
@@ -237,6 +238,47 @@ public class AlertObject implements OnRobotStateChangeListener ,OnClawGameStatus
         return gson.toJson(gameData);
 
     }
+
+ //获得语音
+    public String jsonPayVoice() {
+        Cursor itemCursor = null;
+        PayVoiceList pvl=new PayVoiceList();
+        Gson gson = new Gson();
+        try {
+            Uri itemUri = Uri.parse("content://com.efrobot.settings.common.GameSpeechProvider");
+            itemCursor = mContext.getContentResolver().query(itemUri, null, null, null, null);
+            if (itemCursor != null) {
+                ArrayList<PayVoiceData> plist=new ArrayList<PayVoiceData>() ;
+                while (itemCursor.moveToNext()) {
+                    PayVoiceData pvd=new PayVoiceData();
+                    String pcontent = itemCursor.getString(itemCursor.getColumnIndex("content"));
+                    // type   0 是 title   1 扫码进入游戏  2扫码不游戏
+                    String ptype = itemCursor.getString(itemCursor.getColumnIndex("type"));
+                    String ptime = itemCursor.getString(itemCursor.getColumnIndex("time"));
+                    pvd.SetContent(pcontent);
+                    pvd.SetType(ptype);
+                    pvd.SetTime(ptime);
+                    plist.add(pvd);
+                    Log.i(TAG, "content=" + pcontent + ",type=" + ptype);
+                }
+                if (plist.size() > 0) {
+                   pvl.SetList(plist);
+                }
+            }
+            if(pvl.Lenght()==0)
+            {
+                return null;//表不存在
+            }
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        } finally {
+            if (itemCursor != null) itemCursor.close();
+        }
+        return gson.toJson(pvl);
+    }
+
+
+
     //解注
     public void unRegister() {
         RobotManager.getInstance(mContext).unRegisterRightWingActivePassiveChangeListener(this);

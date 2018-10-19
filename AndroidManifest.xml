@@ -19,7 +19,7 @@
   <uses-permission android:name="android.permission.REORDER_TASKS"/>
 
   <application   android:icon="@mipmap/app_icon" android:label="@string/app_name" android:isGame="true" android:banner="@drawable/app_banner" android:name=".LuckyApplication">
-    <activity  android:theme="@style/Theme.MyAppTheme" android:label="@string/app_name" android:screenOrientation="portrait" android:launchMode="singleTask" android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale|layoutDirection|density" android:name="com.jhz.luckyboyunity.UnityPlayerActivity">
+    <activity  android:theme="@style/gameTheme" android:label="@string/app_name" android:screenOrientation="portrait" android:launchMode="singleTask" android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale|layoutDirection|density" android:name="com.jhz.luckyboyunity.UnityPlayerActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
@@ -40,3 +40,5 @@
   <uses-feature android:name="android.hardware.touchscreen.multitouch" android:required="false" />
   <uses-feature android:name="android.hardware.touchscreen.multitouch.distinct" android:required="false" />
 </manifest>
+
+

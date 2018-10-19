@@ -66,6 +66,7 @@ public class Constants {
 
     public  static  final  String LuckCatchRecordList="reportBatchCrawlRecord";
 
+    private  static   String    ReadSettingValue="";
 
     public  static String  GetIPAddress(IpTypeLuck iptype)
     {
@@ -93,11 +94,61 @@ public class Constants {
         L.d(TAG, "GetIPAddress  IpAddress="+ipadress);
         return ipadress;
     }
-   //是否是五局模式
+   //设置中的数据
     public  static String  GetGameModeData()
     {
+        String defualStr="0|3|5|3|0";// 支付模式|三局|5个题目|pass 3|进入游戏
+        try {
+            if(ReadSettingValue==null||ReadSettingValue=="") {
+                ReadSettingValue = ReadSettingValueFun();
+            }
+            if(ReadSettingValue!=null||ReadSettingValue!="")
+            {
+                JSONObject jsonObject = new JSONObject(ReadSettingValue);
+                if (jsonObject.has("model")&&jsonObject.has("mission")&&jsonObject.has("question")
+                        &&jsonObject.has("pass")&&jsonObject.has("gift_model")) {
+                    String  model=jsonObject.optString("model");
+                    String misson = jsonObject.optString("mission");
+                    String question = jsonObject.optString("question");
+                    String pass = jsonObject.optString("pass");
+                    String gift_model = jsonObject.optString("gift_model");//是否游戏
+                    return model+"|"+misson+"|"+question+"|"+pass+"|" +gift_model;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+         return  defualStr;
+    }
+
+  //是否玩游戏
+    public static String GetIsGame()
+    {
+        String defualStr="0";// 进入游戏
+        try {
+            String settingValue=  ReadSettingValueFun();
+            if(settingValue!=null||settingValue!="")
+            {
+                ReadSettingValue=settingValue;
+                L.d(TAG, "ReadSettingValue ==="+settingValue);
+                JSONObject jsonObject = new JSONObject(settingValue);
+                if (jsonObject.has("gift_model")) {
+                    return jsonObject.optString("gift_model");//是否游戏
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return  defualStr;
+    }
+
+    private static String ReadSettingValueFun()
+    {
         File filePath = new File(FiveRoundConfig);
-        String defualStr="0|3|10|10";// 支付模式|三局|10个题目|pass 10
         if(filePath.exists())
         {
             try
@@ -115,23 +166,17 @@ public class Constants {
                 linStr=localStr.toString();
                 if(linStr!=null||linStr!="")
                 {
-                    JSONObject jsonObject = new JSONObject(linStr);
-                    if (jsonObject.has("model")&&jsonObject.has("mission")&&jsonObject.has("question")&&jsonObject.has("pass")) {
-                        String  model=jsonObject.optString("model");
-                        String misson = jsonObject.optString("mission");
-                        String question = jsonObject.optString("question");
-                        String pass = jsonObject.optString("pass");
-                        return model+"|"+misson+"|"+question+"|"+pass ;
-                    }
+                    return  linStr;
                 }
-                return defualStr;
+                return null;
             }
             catch(Exception e)
             {
-                L.d(TAG, "--GetGameModeData--Read error-");
+                L.d(TAG, "--ReadSettingValue error-");
                 e.printStackTrace();
             }
         }
-        return  defualStr;
+        return  null;
     }
+
 }
