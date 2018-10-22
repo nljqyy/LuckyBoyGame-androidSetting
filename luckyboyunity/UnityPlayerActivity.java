@@ -87,44 +87,18 @@ public class UnityPlayerActivity extends Activity
     @Override protected void onCreate(Bundle savedInstanceState)
     {
         L.d(TAG, "---------------onCreate------------");
-
-      //  SharedPreferences themeInfo = this.getSharedPreferences("themeInfo", 0);
-       // String current_theme=themeInfo.getString("current_theme","");
-        String isgame = Constants.GetIsGame();
-       // if(current_theme=="") {
-         //   themeInfo.edit().putString("current_theme", "game").commit();
-          //  if (isgame == "0") {
-          //      setTheme(R.style.gameTheme);
-          //  } else {
-          //      setTheme(R.style.nogameTheme);
-          //  }
-          //  AgainCreate();
-       // }
-
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
-
         count=0;
         mUnityPlayer = new UnityPlayer(this);
-        Splash.getInstance().onCreate(mUnityPlayer, savedInstanceState);
-        int img_Id = isgame == "0"?R.mipmap.splash_game:R.mipmap.splash_nogame;
-        Splash.getInstance().onShowSplash(img_Id);
-        //handler.sendEmptyMessageDelayed(4, 2 * 1000);
-
+        Splash.getInstance().onCreate(mUnityPlayer,savedInstanceState);
+        Splash.getInstance().onShowSplash(R.drawable.loading_2);
         setContentView(mUnityPlayer);
         mUnityPlayer.requestFocus();
         mGroupManager=SpeechGroupManager.getInstance(RobotManager.getInstance(this));
         ClawGameManager.getInstance(getApplicationContext()).init();//初始化
         alerObj=new AlertObject(this);
         timer = new Timer();// 实例化Timer类
-    }
-
-    private  void AgainCreate()
-    {
-        finish();
-        Intent intent = new Intent(this, UnityPlayerActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED | Intent.FLAG_ACTIVITY_CLEAR_TOP) ;
-        startActivity(intent);
     }
 
     @Override protected void onNewIntent(Intent intent)

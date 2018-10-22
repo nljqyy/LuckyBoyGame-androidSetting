@@ -8,18 +8,18 @@
 </style>
 
     <!--不游戏风格-->
-    <style name="nogameTheme" parent="UnityThemeSelector">
+   <!-- <style name="nogameTheme" parent="UnityThemeSelector">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowContentOverlay">@null</item>
-         <item name="android:windowBackground">@mipmap/splash_nogame</item>
+        <item name="android:windowBackground">@mipmap/splash_nogame</item>
         <item name="android:windowFullscreen">true</item>
-    </style>
+    </style>-->
 
     <!--游戏风格-->
     <style name="gameTheme" parent="UnityThemeSelector">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowBackground">@mipmap/splash_game</item>
+       <item name="android:windowBackground">@drawable/placeholder</item>
         <item name="android:windowFullscreen">true</item>
     </style>
 </resources>
