@@ -97,22 +97,33 @@ public class Constants {
    //设置中的数据
     public  static String  GetGameModeData()
     {
-        String defualStr="0|3|5|3|0";// 支付模式|三局|5个题目|pass 3|进入游戏
+       // 支付模式|三局|5个题目|pass 3|进入游戏|抓娃娃游戏
+        String[] values=new String[]{"0","3","5","3","0","0"};
         try {
             if(ReadSettingValue==null||ReadSettingValue=="") {
                 ReadSettingValue = ReadSettingValueFun();
             }
             if(ReadSettingValue!=null||ReadSettingValue!="")
             {
+                L.d(TAG, "ReadSettingValue ==="+ReadSettingValue);
                 JSONObject jsonObject = new JSONObject(ReadSettingValue);
-                if (jsonObject.has("model")&&jsonObject.has("mission")&&jsonObject.has("question")
-                        &&jsonObject.has("pass")&&jsonObject.has("gift_model")) {
-                    String  model=jsonObject.optString("model");
-                    String misson = jsonObject.optString("mission");
-                    String question = jsonObject.optString("question");
-                    String pass = jsonObject.optString("pass");
-                    String gift_model = jsonObject.optString("gift_model");//是否游戏
-                    return model+"|"+misson+"|"+question+"|"+pass+"|" +gift_model;
+                if(jsonObject.has("model")){
+                    values[0]=jsonObject.optString("model");
+                }
+                if(jsonObject.has("mission")) {
+                    values[1]=jsonObject.optString("mission");
+                }
+                if(jsonObject.has("question")) {
+                    values[2]=jsonObject.optString("question");
+                }
+                if(jsonObject.has("pass")) {
+                    values[3]=jsonObject.optString("pass");
+                }
+                if(jsonObject.has("gift_model")) {
+                    values[4]=jsonObject.optString("gift_model");// 是否进入游戏
+                }
+                if(jsonObject.has("game_type")) {
+                    values[5]=jsonObject.optString("game_type");//游戏类型 0抓娃娃  1幸运转转
                 }
             }
         }
@@ -120,22 +131,28 @@ public class Constants {
         {
             e.printStackTrace();
         }
-         return  defualStr;
+        StringBuilder sbd=new StringBuilder();
+        for (int i=0;i<values.length;i++)
+        {
+            sbd.append(values[i]);
+            if(i!=values.length-1)
+                sbd.append("|");
+        }
+        return  sbd.toString();
     }
 
-  //是否玩游戏
-    public static String GetIsGame()
+  //选择游戏类型
+    public static String SelectGame()
     {
-        String defualStr="0";// 进入游戏
+        String defualStr="0";// 抓娃娃游戏
         try {
             String settingValue=  ReadSettingValueFun();
             if(settingValue!=null||settingValue!="")
             {
                 ReadSettingValue=settingValue;
-                L.d(TAG, "ReadSettingValue ==="+settingValue);
                 JSONObject jsonObject = new JSONObject(settingValue);
-                if (jsonObject.has("gift_model")) {
-                    return jsonObject.optString("gift_model");//是否游戏
+                if (jsonObject.has("game_type")) {
+                    return jsonObject.optString("game_type");//游戏类别
                 }
             }
         }

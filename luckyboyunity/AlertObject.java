@@ -1,5 +1,6 @@
 package com.jhz.luckyboyunity;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -149,16 +150,16 @@ public class AlertObject implements OnRobotStateChangeListener ,OnClawGameStatus
         if (newState != RobotState.HEADKEY_STATE_UP) {
                Log.d(TAG, "头部按钮按下----isAppQuit:"+isAppQuit);
             if(isAppQuit==false)
-                UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","HeadDown");
+                UnityPlayer.UnitySendMessage("AndroidCallUnity","AndroidCall","HeadDown");
          }
                 break;
             case RobotState.ROBOT_STATE_INDEX_LEFT_WING_ACTIVE_PASSIVE://左翅膀角度
                 if(newState==2)//被动运动
-                  UnityPlayer.UnitySendMessage("SDKManager","Question_Wing","1");
+                  UnityPlayer.UnitySendMessage("AndroidCallUnity","Question_Wing","1");
                 break;
             case RobotState.ROBOT_STATE_INDEX_RIGHT_WING_ACTIVE_PASSIVE://右翅膀运动
                 if(newState==2)//被动运动
-                  UnityPlayer.UnitySendMessage("SDKManager","Question_Wing","0");
+                  UnityPlayer.UnitySendMessage("AndroidCallUnity","Question_Wing","0");
                 break;
 
       }
@@ -172,22 +173,22 @@ public class AlertObject implements OnRobotStateChangeListener ,OnClawGameStatus
       {
          if(num==ClawGameStatus.VALUE_DOLL_HAS)
          {
-             UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","HasBoy");
+             UnityPlayer.UnitySendMessage("AndroidCallUnity","AndroidCall","HasBoy");
          }
          else
          {
-             UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","NoHas");
+             UnityPlayer.UnitySendMessage("AndroidCallUnity","AndroidCall","NoHas");
          }
       }
      // else if(status==ClawGameStatus.INDEX_CHECK_DOLL_TAKE_AWAY)//是否取走
      // {
         //  if(num==ClawGameStatus.VALUE_DOLL_ALL_TAKE_AWAY)//已取走
          // {
-        //      UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","TakeAway");
+        //      UnityPlayer.UnitySendMessage("AndroidCallUnity","AndroidCall","TakeAway");
         //  }
         //  else
         //  {
-         //     UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","NoTakeAway");
+         //     UnityPlayer.UnitySendMessage("AndroidCallUnity","AndroidCall","NoTakeAway");
         //  }
      // }
     }
@@ -198,6 +199,7 @@ public class AlertObject implements OnRobotStateChangeListener ,OnClawGameStatus
      * @param
      * @return
      */
+    //获得问题及答案
     public String jsonAnswer() {
         Cursor itemCursor = null;
         GameData gameData = new GameData();
@@ -205,6 +207,9 @@ public class AlertObject implements OnRobotStateChangeListener ,OnClawGameStatus
         try {
             Uri itemUri = Uri.parse("content://com.efrobot.settings.common.GameProvider");
             itemCursor = mContext.getContentResolver().query(itemUri, null, null, null, null);
+            ContentValues contentValues=new ContentValues();
+            contentValues.put("used",1);
+            mContext.getContentResolver().update(itemUri,contentValues,"id=?",new String[]{"1"});
             if (itemCursor != null) {
                 ArrayList<GameAnswer> answerArray = new ArrayList<>();
                 while (itemCursor.moveToNext()) {
@@ -259,7 +264,7 @@ public class AlertObject implements OnRobotStateChangeListener ,OnClawGameStatus
                     pvd.SetType(ptype);
                     pvd.SetTime(ptime);
                     plist.add(pvd);
-                    Log.i(TAG, "content=" + pcontent + ",type=" + ptype);
+                    Log.i(TAG, "content=" + pcontent + ",type=" + ptype+ ",time="+ptime);
                 }
                 if (plist.size() > 0) {
                    pvl.SetList(plist);
@@ -275,6 +280,57 @@ public class AlertObject implements OnRobotStateChangeListener ,OnClawGameStatus
             if (itemCursor != null) itemCursor.close();
         }
         return gson.toJson(pvl);
+    }
+   //读取优惠券
+    public String jsonOnSaleContent()
+    {
+        Cursor itemCursor = null;
+        PayVoiceList pvl=new PayVoiceList();
+        Gson gson = new Gson();
+        try {
+            Uri itemUri = Uri.parse("content://com.efrobot.settings.common.GameSettingsProvider");
+            //used=0  0未使用  1已使用
+            itemCursor = mContext.getContentResolver().query(itemUri, null, "used=?", new String[]{"0"}, null);
+            if (itemCursor != null) {
+                ArrayList<PayVoiceData> plist=new ArrayList<PayVoiceData>() ;
+                while (itemCursor.moveToNext()) {
+                    PayVoiceData pvd=new PayVoiceData();
+                    String pcontent = itemCursor.getString(itemCursor.getColumnIndex("content"));
+                    int pid = itemCursor.getInt(itemCursor.getColumnIndex("_id"));
+                    pvd.SetContent(pcontent);
+                    pvd.SetType(pid+""); //  此处对应表里的 id 字段
+                    plist.add(pvd);
+                    Log.i(TAG, "content=" + pcontent + ",_id=" + pid);
+                }
+                if (plist.size() > 0) {
+                    pvl.SetList(plist);
+                }
+            }
+            Log.i(TAG, "pvl.Lenght()=" + pvl.Lenght());
+            if(pvl.Lenght()==0)
+            {
+                return "";//表不存在
+            }
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        } finally {
+            if (itemCursor != null) itemCursor.close();
+        }
+        return gson.toJson(pvl);
+    }
+    //更新优惠券状态
+    public void updateOnSaleValue(String id)
+    {
+       try {
+           Log.i(TAG, "更新优惠券状态--id="+id);
+           Uri itemUri = Uri.parse("content://com.efrobot.settings.common.GameSettingsProvider");
+           ContentValues contentValues=new ContentValues();
+           contentValues.put("used",1);
+           mContext.getContentResolver().update(itemUri,contentValues,"_id=?",new String[]{id});
+       }
+        catch (IllegalStateException e){
+        e.printStackTrace();
+        }
     }
 
 

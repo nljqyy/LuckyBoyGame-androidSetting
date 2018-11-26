@@ -216,7 +216,7 @@ public class UnityPlayerActivity extends Activity
         if (!NetUtil.checkNet(this)){
             L.d(TAG, "no network");
             if(isfirst) {
-                uspeak("没有网络，请联网后再试");
+                SpeakWords("没有网络，请联网后再试");
                 handler.sendEmptyMessageDelayed(3, 3 * 1000);
             }
             return;
@@ -246,19 +246,19 @@ public class UnityPlayerActivity extends Activity
                                 String paytime=jsonObject.optString("winningLevel")+"|"+openId;
                                 if(isForeground)
                                 {
-                                    UnityPlayer.UnitySendMessage("SDKManager","PaySuccess",paytime);
+                                    UnityPlayer.UnitySendMessage("AndroidCallUnity","PaySuccess",paytime);
                                 }
                             }
                             else
                             {
                                 if(isfirst)
-                                   UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","NoPay");
+                                   UnityPlayer.UnitySendMessage("AndroidCallUnity","AndroidCall","NoPay");
                             }
                         }
                         else
                         {
                             if(isfirst)
-                                UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","NoPay");
+                                UnityPlayer.UnitySendMessage("AndroidCallUnity","AndroidCall","NoPay");
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -275,14 +275,14 @@ public class UnityPlayerActivity extends Activity
                         count++;
                         handler.sendEmptyMessageDelayed(2, 3 * 1000);
                     }else{
-                        UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","Error");
+                        UnityPlayer.UnitySendMessage("AndroidCallUnity","AndroidCall","Error");
                         count=0;
                     }
                 }
             });
         } catch (JSONException e) {
             e.printStackTrace();
-            //UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","Error");
+
         }
 
     }
@@ -312,7 +312,7 @@ public class UnityPlayerActivity extends Activity
                             String urlStr = jsonObject.optString("qrUrl");
                             String orderNo = jsonObject.optString("orderNo");
                             String msg=urlStr+"|"+orderNo+"|"+getRobotId();
-                            UnityPlayer.UnitySendMessage("SDKManager", "QRCodeCall", msg);
+                            UnityPlayer.UnitySendMessage("AndroidCallUnity", "QRCodeCall", msg);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -361,11 +361,11 @@ public class UnityPlayerActivity extends Activity
                             String carwBasic = jsonObject.optString("captureStepLenght");//基数
                             String money=jsonObject.optString("qrAmount");//金额
                             String pwVV=probaValue+"|"+winging+"|"+carwBasic+"|"+money;
-                            UnityPlayer.UnitySendMessage("SDKManager","GetProbabilityCall",pwVV);
+                            UnityPlayer.UnitySendMessage("AndroidCallUnity","GetProbabilityCall",pwVV);
                         }
                         else if(jsonObject.has("resultCode") && jsonObject.getString("resultCode").equals("NO_DOLL_ROBOT"))
                         {
-                            UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","NoBind");
+                            UnityPlayer.UnitySendMessage("AndroidCallUnity","AndroidCall","NoBind");
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -381,7 +381,7 @@ public class UnityPlayerActivity extends Activity
             });
         } catch (JSONException e) {
             e.printStackTrace();
-           // UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","Error");
+           // UnityPlayer.UnitySendMessage("AndroidCallUnity","AndroidCall","Error");
         }
 
     }
@@ -432,7 +432,7 @@ public class UnityPlayerActivity extends Activity
                 public void onFail(NetMessage message, int errorCode, String errorMessage) {
                     super.onFail(message, errorCode, errorMessage);
                     L.d(TAG, "SendCatchRecord  onFail  errorCode=" + errorCode+" errorMessage="+errorMessage);
-                    UnityPlayer.UnitySendMessage("SDKManager", "AndroidCall", "UpRecordFail");
+                    UnityPlayer.UnitySendMessage("AndroidCallUnity", "AndroidCall", "UpRecordFail");
                 }
             });
         } catch (JSONException e) {
@@ -465,7 +465,7 @@ public class UnityPlayerActivity extends Activity
                     try {
                         jsonObject = new JSONObject(result);
                         if (jsonObject.has("resultCode") && jsonObject.getString("resultCode").equals("SUCCESS")) {
-                            UnityPlayer.UnitySendMessage("SDKManager", "AndroidCall", "UpRecordListSuccess");
+                            UnityPlayer.UnitySendMessage("AndroidCallUnity", "AndroidCall", "UpRecordListSuccess");
                         }
 
                     } catch (JSONException e) {
@@ -535,7 +535,7 @@ public class UnityPlayerActivity extends Activity
                 public void onFail(NetMessage message, int errorCode, String errorMessage) {
                     super.onFail(message, errorCode, errorMessage);
                     L.d(TAG, "Q_UpRecord  onFail  errorCode=" + errorCode+" errorMessage="+errorMessage);
-                    UnityPlayer.UnitySendMessage("SDKManager", "AndroidCall", "UpRecordFail");
+                    UnityPlayer.UnitySendMessage("AndroidCallUnity", "AndroidCall", "UpRecordFail");
                 }
             });
         } catch (JSONException e) {
@@ -554,26 +554,26 @@ public class UnityPlayerActivity extends Activity
         return number;
     }
 
-    public void uspeak(String msg)
+    public void SpeakWords(String msg)
     {
-        L.d("speak", "unity调用了speak方法");
+        L.d("SpeakWords", "unity调用了SpeakWords方法");
         alerObj.speak(msg);
     }
 
-    public void uwave(int time)
+    public void ShakeWave(int time)
     {
-        L.d("wave", "unity调用了wave方法");
+        L.d("ShakeWave", "unity调用了ShakeWave方法");
         alerObj.wave(time);
     }
-    public void ulight(boolean n, int time)
+    public void OpenLight(boolean n, int time)
     {
-        L.d("light", "unity调用了light方法");
+        L.d("OpenLight", "unity调用了OpenLight方法");
         alerObj.light(n,time);
     }
-
-    public  void wonDoll(boolean state)
+    //摆动翅膀闪光带
+    public  void ShakeWaveLight(boolean state)
     {
-        L.d("wonDoll", "unity调用了wonDoll方法");
+        L.d("ShakeWaveLight", "unity调用了ShakeWaveLight方法");
         alerObj.wonDoll(state);
     }
 
@@ -613,7 +613,7 @@ public class UnityPlayerActivity extends Activity
         }
 
 //自动出礼物
-    public  void autoPresent()
+    public  void AutoPresent()
     {
         //ClawGameManager.getInstance(getApplicationContext()).getControlManagerInstance(getApplicationContext()).pushRod();
         ClawGameManager.getInstance(getApplicationContext()).getControlManagerInstance(getApplicationContext()).trackForwardOnce(2);//抓成功出娃娃
@@ -623,7 +623,7 @@ public class UnityPlayerActivity extends Activity
     {
         if(ClawGameManager.getInstance(getApplicationContext()).checkDollExit() ==  ClawGameStatus.VALUE_DOLL_NO_HAS)
         {
-          //UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","NoHas");
+          //UnityPlayer.UnitySendMessage("AndroidCallUnity","AndroidCall","NoHas");
             return false;
         }
         return  true;
@@ -653,8 +653,8 @@ public class UnityPlayerActivity extends Activity
         alerObj.RegisterWingListener(state);
     }
 
-    //获得支付语音
-    public  String GetPayVoice(){return alerObj.jsonPayVoice();}
+    //获得支付页面语音
+    public  String GetPayPageVoice(){return alerObj.jsonPayVoice();}
 
     //关闭Splash页面
     public  void  HideSplash(){ Splash.getInstance().onHideSplash();}
@@ -688,6 +688,16 @@ public class UnityPlayerActivity extends Activity
         },0, 1000);// 这里百毫秒
 
     }
+
+    //选择进入那个游戏
+    public String SelectGame(){ return Constants.SelectGame();}
+
+    //获得优惠券数据
+    public  String GetOnSaleNumberData(){ return   alerObj.jsonOnSaleContent();}
+    //更新优惠券状态
+    public  void UpdateOnSaleValue(String id){ alerObj.updateOnSaleValue(id);}
+
+
   //切到前台
     private  void  MoveForeground()
     {
@@ -695,6 +705,6 @@ public class UnityPlayerActivity extends Activity
         isForeground=true;
         ActivityManager am = (ActivityManager) getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
         am.moveTaskToFront(getTaskId(), ActivityManager.MOVE_TASK_WITH_HOME);
-        UnityPlayer.UnitySendMessage("SDKManager","AndroidCall","PaySuccess");
+        UnityPlayer.UnitySendMessage("AndroidCallUnity","AndroidCall","PaySuccess");
     }
 }
