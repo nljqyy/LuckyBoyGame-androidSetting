@@ -308,11 +308,19 @@ public class UnityPlayerActivity extends Activity
                     JSONObject jsonObject = null;
                     try {
                         jsonObject = new JSONObject(result);
-                        if (jsonObject.has("resultCode") && jsonObject.getString("resultCode").equals("SUCCESS")) {
-                            String urlStr = jsonObject.optString("qrUrl");
-                            String orderNo = jsonObject.optString("orderNo");
-                            String msg=urlStr+"|"+orderNo+"|"+getRobotId();
-                            UnityPlayer.UnitySendMessage("AndroidCallUnity", "QRCodeCall", msg);
+                        if (jsonObject.has("resultCode"))
+                        {
+                            if (jsonObject.getString("resultCode").equals("SUCCESS")) {
+                                String urlStr = jsonObject.optString("qrUrl");
+                                String orderNo = jsonObject.optString("orderNo");
+                                String msg=urlStr+"|"+orderNo+"|"+getRobotId();
+                                UnityPlayer.UnitySendMessage("AndroidCallUnity", "QRCodeCall", msg);
+                            }
+                            else if(jsonObject.getString("resultCode").equals("NO_DOLL_ROBOT")||
+                                    jsonObject.getString("resultCode").equals("ACTIVE_ROBOT"))
+                            {
+                                UnityPlayer.UnitySendMessage("AndroidCallUnity","AndroidCall","NoBind");
+                            }
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -353,20 +361,25 @@ public class UnityPlayerActivity extends Activity
                     JSONObject jsonObject = null;
                     try {
                         jsonObject = new JSONObject(result);
-                        if (jsonObject.has("resultCode") && jsonObject.getString("resultCode").equals("SUCCESS")) {
-                            String data=jsonObject.optString("data");//概率值
-                            jsonObject = new JSONObject(data);
-                            String probaValue = jsonObject.optString("captureProb");//概率值
-                            String winging = jsonObject.optString("captureStepNum");//中奖值
-                            String carwBasic = jsonObject.optString("captureStepLenght");//基数
-                            String money=jsonObject.optString("qrAmount");//金额
-                            String pwVV=probaValue+"|"+winging+"|"+carwBasic+"|"+money;
-                            UnityPlayer.UnitySendMessage("AndroidCallUnity","GetProbabilityCall",pwVV);
-                        }
-                        else if(jsonObject.has("resultCode") && jsonObject.getString("resultCode").equals("NO_DOLL_ROBOT"))
+                        if (jsonObject.has("resultCode"))
                         {
-                            UnityPlayer.UnitySendMessage("AndroidCallUnity","AndroidCall","NoBind");
+                            if (jsonObject.getString("resultCode").equals("SUCCESS")) {
+                                String data=jsonObject.optString("data");//概率值
+                                jsonObject = new JSONObject(data);
+                                String probaValue = jsonObject.optString("captureProb");//概率值
+                                String winging = jsonObject.optString("captureStepNum");//中奖值
+                                String carwBasic = jsonObject.optString("captureStepLenght");//基数
+                                String money=jsonObject.optString("qrAmount");//金额
+                                String pwVV=probaValue+"|"+winging+"|"+carwBasic+"|"+money;
+                                UnityPlayer.UnitySendMessage("AndroidCallUnity","GetProbabilityCall",pwVV);
+                            }
+                            else if(jsonObject.getString("resultCode").equals("NO_DOLL_ROBOT")||
+                                    jsonObject.getString("resultCode").equals("ACTIVE_ROBOT"))
+                            {
+                                UnityPlayer.UnitySendMessage("AndroidCallUnity","AndroidCall","NoBind");
+                            }
                         }
+
                     } catch (JSONException e) {
                         e.printStackTrace();
                         L.d(TAG, "GetProbabilityValue  解析错误:"+e.getMessage());
